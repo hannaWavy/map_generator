@@ -5,7 +5,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
-import { HEIGHT_COLORS } from './MapStyle';
+import { MapColorScheme } from './MapStyle';
 import { useMapStore } from '../../stores/map';
 
 export default defineComponent({
@@ -39,12 +39,11 @@ export default defineComponent({
         return;
       }
       const mapStore = useMapStore();
+      const colorScheme = new MapColorScheme({
+        minHeight, maxHeight
+      });
 
-      const dispersion: number = HEIGHT_COLORS.length,
-        range: number = maxHeight - minHeight,
-        step: number = range / dispersion;
-
-      let color = HEIGHT_COLORS[0],
+      let color = colorScheme.colorHeight(),
         height = 0;
 
       mapStore.setSize(props);
@@ -52,7 +51,7 @@ export default defineComponent({
       for (let x = 0; x < props.width; x++) {
         for (let y = 0; y < props.height; y++) {
           height = getRandomInt(minHeight, maxHeight);
-          color = HEIGHT_COLORS[Math.floor((height - minHeight) / step)];
+          color = colorScheme.colorHeight(height);
           mapStore.addPoint({ height, color });
 
           context.value.fillStyle = '#' + color.toString(16);
