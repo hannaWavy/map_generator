@@ -1,23 +1,19 @@
 <template>
   Points amount: {{ clashPointsAmount }}
-  <canvas
-    id="mapCanvas"
-    ref="mapCanvas"
-    :width="width"
-    :height="height"
-    :class="$options.className"
-  />
+  <canvas id="mapCanvas" ref="mapCanvas" :width="width" :height="height" :class="$options.className" />
 </template>
 
 <script lang="ts">
 type Coords = [number, number]
 type ClashPoints = [Coords, number]
+type ClashLine = [Coords, Coords]
+type ClashLineArray = [ClashLine, number]
 
 import type { Ref } from 'vue'
 import { defineComponent, onMounted, ref } from 'vue'
 import { MapColorScheme } from './MapStyle'
 import { useMapStore } from '@/stores/map'
-import { getRandomInt } from '@/utils'
+import { getRandomInt, doLineSegmentsIntersect } from '@/utils'
 
 export default defineComponent({
   name: 'MapCanvas',
@@ -36,7 +32,8 @@ export default defineComponent({
     const maxHeight = 4000,
       minHeight = -4000,
       clashPointsAmount = Math.round((props.width * props.height) / 4000),
-      clashPoints: Map<Coords, number> = new Map()
+      clashPoints: Map<Coords, number> = new Map(),
+      clashLines: Map<ClashLine, number> = new Map()
 
     const mapCanvas: Ref<HTMLCanvasElement | undefined> = ref(),
       context: Ref<CanvasRenderingContext2D | undefined> = ref()
@@ -65,7 +62,7 @@ export default defineComponent({
         context.value.stroke()
       }
 
-      const calcDistance = function (coordsStart: Coords, coordsEnd: Coords) {
+      const calcDistance = function (coordsStart: Coords, coordsEnd: Coords): number {
         return Math.sqrt(
           Math.pow(coordsEnd[0] - coordsStart[0], 2) + Math.pow(coordsEnd[1] - coordsStart[1], 2)
         )
@@ -88,15 +85,12 @@ export default defineComponent({
       }
 
       //lines
-      const CONNECTION_AMOUNT = 2
-
       function addClashPoint(coords: Coords) {
         clashPoints.set(coords, 0)
         mapStore.updatePoint(coords, {
           height: maxHeight,
           color: colorScheme.colorHeight(maxHeight)
         })
-        // drawPoint(coords, colorScheme.colorHeight(maxHeight));
       }
 
       for (let c = 0; c < clashPointsAmount; c++) {
@@ -120,36 +114,38 @@ export default defineComponent({
       }
 
       clashPoints.forEach((startPointConnections, startPointCoord, map) => {
-        let sortedClashPoints: ClashPoints[] = Array.from(clashPoints.entries()).filter(
-          (point) => point[1] < CONNECTION_AMOUNT
-        )
-        if (startPointConnections < CONNECTION_AMOUNT) {
-          sortedClashPoints = sortedClashPoints
-            .sort(function compareDistance(a, b) {
-              const aDistance = borderLine(startPointCoord, a[0])
-                ? 0
-                : calcDistance(startPointCoord, a[0])
-              const bDistance = borderLine(startPointCoord, b[0])
-                ? 0
-                : calcDistance(startPointCoord, b[0])
-              a[1] = aDistance //instead of connections store distance
-              b[1] = bDistance
+        let sortedClashPoints: ClashPoints[] = Array.from(map.entries()).filter((clashPoint) => clashPoint[0] != startPointCoord)
 
-              return aDistance - bDistance
-            })
-            .filter((point) => point[1] > 0)
-
-          if (sortedClashPoints[0]) {
-            drawLine(startPointCoord, sortedClashPoints[0][0])
-            map.set(sortedClashPoints[0][0], (map.get(sortedClashPoints[0][0]) || 0) + 1)
+        sortedClashPoints.forEach((clashPoint) => {
+          if (!borderLine(startPointCoord, clashPoint[0])) {
+            clashLines.set([startPointCoord, clashPoint[0]], calcDistance(startPointCoord, clashPoint[0]))
           }
-          if (sortedClashPoints[1]) {
-            drawLine(startPointCoord, sortedClashPoints[1][0])
-            map.set(sortedClashPoints[1][0], (map.get(sortedClashPoints[1][0]) || 0) + 1)
-          }
+        })
 
-          map.delete(startPointCoord)
+        map.delete(startPointCoord)
+      })
+
+      clashLines.forEach((lineDistance, lineCoords, map) => {
+        let filteredClashLines: ClashLineArray[] = Array.from(map.entries()).filter((clashLine) => (clashLine[0][0] != lineCoords[0]) && (clashLine[0][0] != lineCoords[1]) && (clashLine[0][1] != lineCoords[1]) && (clashLine[0][1] != lineCoords[0]))
+        filteredClashLines = filteredClashLines.filter((clashLine) => { //intersection
+          const intersect = doLineSegmentsIntersect(
+            { x: lineCoords[0][0], y: lineCoords[0][1] },
+            { x: lineCoords[1][0], y: lineCoords[1][1] },
+            { x: clashLine[0][0][0], y: clashLine[0][0][1] },
+            { x: clashLine[0][1][0], y: clashLine[0][1][1] }
+          )
+          return intersect && clashLine[1] > lineDistance
+        })
+
+        if (filteredClashLines.length) {
+          filteredClashLines.forEach((clashLine) => {
+            map.delete(clashLine[0])
+          })
         }
+      })
+
+      clashLines.forEach((lineDistance, lineCoords) => {
+        drawLine(...lineCoords)
       })
     }
 
