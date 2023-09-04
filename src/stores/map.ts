@@ -24,6 +24,7 @@ export const useMapStore = defineStore({
     size: { width: 0, height: 0 } as Size
   }),
   actions: {
+    //TODO: unsafe order, unsafe position
     addPoint(pointAttrs: PointProps) {
       if (pointAttrs.color < 0 || pointAttrs.color > 16777215) pointAttrs.color = 0
       this.points.push([pointAttrs.height, pointAttrs.color])
@@ -36,14 +37,24 @@ export const useMapStore = defineStore({
     setSize(size: Size) {
       this.size = size
     },
+
     getPoint(pointPosition: Point): PointProps | undefined {
-      //TODO: unsafe order, unsafe position
       if (!this.size.width || !this.size.height) return
       if (pointPosition[0] > this.size.width) return
       if (pointPosition[1] > this.size.height) return
 
       const point = this.points[pointPosition[0] * this.size.height + pointPosition[1]]
       return { height: point[0], color: point[1] }
+    },
+
+    updatePoint(pointPosition: Point, pointAttrs: PointProps) {
+      if (!this.size.width || !this.size.height) return
+      if (pointPosition[0] > this.size.width) return
+      if (pointPosition[1] > this.size.height) return
+
+      const pointIndex = pointPosition[0] * this.size.height + pointPosition[1]
+      this.points[pointIndex] = [pointAttrs.height, pointAttrs.color]
+      return pointAttrs
     }
   }
 })

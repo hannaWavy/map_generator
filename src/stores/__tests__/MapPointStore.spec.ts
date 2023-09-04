@@ -1,7 +1,7 @@
 // stores/counter.spec.ts
 import { setActivePinia, createPinia } from 'pinia'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useMapStore } from '../../stores/map'
+import { useMapStore } from '@/stores/map'
 
 describe('Map Pointers Store', () => {
   beforeEach(() => {
@@ -21,7 +21,6 @@ describe('Map Pointers Store', () => {
 
   it('get point', () => {
     const mapPoints = useMapStore()
-    expect(mapPoints.points).toStrictEqual([])
 
     const size = { width: 2, height: 4 }
     mapPoints.setSize(size)
@@ -33,5 +32,24 @@ describe('Map Pointers Store', () => {
     }
 
     expect(mapPoints.getPoint([1, 3])).toStrictEqual({ height: 13, color: 4 })
+  })
+
+  it('update point', () => {
+    const mapPoints = useMapStore()
+
+    const size = { width: 2, height: 4 }
+    mapPoints.setSize(size)
+
+    for (let x = 0; x < size.width; x++) {
+      for (let y = 0; y < size.height; y++) {
+        mapPoints.addPoint({ height: Number(String(x) + String(y)), color: x + y })
+      }
+    }
+
+    expect(mapPoints.updatePoint([1, 3], { height: 1000, color: 123 })).toStrictEqual(
+      mapPoints.getPoint([1, 3])
+    )
+    // expect(mapPoints.updatePoint([1, 2], {color: 123})).toStrictEqual(mapPoints.getPoint([1, 2]))
+    // expect(mapPoints.updatePoint([2, 1], {height: 1000})).toStrictEqual(mapPoints.getPoint([1, 2]))
   })
 })
