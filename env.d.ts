@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
-//type Coordinates = { x: number; y: number }
-type Coordinates = [number, number]
+type Coordinates = { x: number; y: number }
+//type Coordinates = [number, number]
 
 // type ValueOf<T> = T[keyof T];
 

@@ -18,7 +18,12 @@
  *  representing the end of the 2nd line.
  */
 
-export function doLineSegmentsIntersect(p: Coordinates, p2: Coordinates, q: Coordinates, q2: Coordinates) {
+export function doLineSegmentsIntersect(
+  p: Coordinates,
+  p2: Coordinates,
+  q: Coordinates,
+  q2: Coordinates
+) {
   const r = subtractPoints(p2, p)
   const s = subtractPoints(q2, q)
 
@@ -34,8 +39,8 @@ export function doLineSegmentsIntersect(p: Coordinates, p2: Coordinates, q: Coor
     }
     // Do they overlap? (Are all the point differences in either direction the same sign)
     return (
-      !allEqual(q[0] - p[0] < 0, q[0] - p2[0] < 0, q2[0] - p[0] < 0, q2[0] - p2[0] < 0) ||
-      !allEqual(q[1] - p[1] < 0, q[1] - p2[1] < 0, q2[1] - p[1] < 0, q2[1] - p2[1] < 0)
+      !allEqual(q.x - p.x < 0, q.x - p2.x < 0, q2.x - p.x < 0, q2.x - p2.x < 0) ||
+      !allEqual(q.y - p.y < 0, q.y - p2.y < 0, q2.y - p.y < 0, q2.y - p2.y < 0)
     )
   }
 
@@ -59,7 +64,7 @@ export function doLineSegmentsIntersect(p: Coordinates, p2: Coordinates, q: Coor
  * @return the cross product result as a float
  */
 function crossProduct(point1: Coordinates, point2: Coordinates) {
-  return point1[0] * point2[1] - point1[1] * point2[0]
+  return point1.x * point2.y - point1.y * point2.x
 }
 
 /**
@@ -71,9 +76,9 @@ function crossProduct(point1: Coordinates, point2: Coordinates) {
  * @return the subtraction result as a point object
  */
 function subtractPoints(point1: Coordinates, point2: Coordinates): Coordinates {
-  const result: Coordinates = [0, 0 ]
-  result[0] = point1[0] - point2[0]
-  result[1] = point1[1] - point2[1]
+  const result: Coordinates = { x: 0, y: 0 }
+  result.x = point1.x - point2.x
+  result.y = point1.y - point2.y
 
   return result
 }
@@ -87,7 +92,7 @@ function subtractPoints(point1: Coordinates, point2: Coordinates): Coordinates {
  * @return if the points are equal
  */
 function equalPoints(point1: Coordinates, point2: Coordinates): boolean {
-  return point1[0] == point2[0] && point1[1] == point2[1]
+  return point1.x == point2.x && point1.y == point2.y
 }
 
 /**

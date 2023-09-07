@@ -1,12 +1,6 @@
 <template>
   Points amount: {{ clashPointsAmount }}
-  <canvas
-    id="mapCanvas"
-    ref="mapCanvas"
-    :width="width"
-    :height="height"
-    :class="$options.className"
-  />
+  <canvas id="mapCanvas" ref="mapCanvas" :width="width" :height="height" :class="$options.className" />
 </template>
 
 <script lang="ts">
@@ -56,14 +50,14 @@ export default defineComponent({
       const drawPoint = function (position: Coordinates, color: number) {
         if (!context.value) return
         context.value.fillStyle = '#' + color.toString(16)
-        context.value.fillRect(position[0], position[1], 1, 1)
+        context.value.fillRect(position.x, position.y, 1, 1)
       }
 
       const drawLine = function (startPosition: Coordinates, endPosition: Coordinates) {
         if (!context.value) return
         context.value.beginPath()
-        context.value.moveTo(...startPosition)
-        context.value.lineTo(...endPosition)
+        context.value.moveTo(startPosition.x, startPosition.y)
+        context.value.lineTo(endPosition.x, endPosition.y)
         context.value.stroke()
       }
 
@@ -79,7 +73,7 @@ export default defineComponent({
           color = colorScheme.colorHeight(height)
           mapStore.addPoint({ height, color })
 
-          drawPoint([x, y], color)
+          drawPoint({ x, y }, color)
         }
       }
 
@@ -93,22 +87,22 @@ export default defineComponent({
       }
 
       for (let c = 0; c < clashPointsAmount; c++) {
-        addClashPoint([randomInt(0, props.width), randomInt(0, props.height)])
+        addClashPoint({ x: randomInt(0, props.width), y: randomInt(0, props.height) })
 
         if (c % 5 === 0) {
-          addClashPoint([0, randomInt(0, props.height)])
-          addClashPoint([randomInt(0, props.width), 0])
-          addClashPoint([props.width, randomInt(0, props.height)])
-          addClashPoint([randomInt(0, props.width), props.height])
+          addClashPoint({ x: 0, y: randomInt(0, props.height) })
+          addClashPoint({ x: randomInt(0, props.width), y: 0 })
+          addClashPoint({ x: props.width, y: randomInt(0, props.height) })
+          addClashPoint({ x: randomInt(0, props.width), y: props.height })
         }
       }
 
       function borderLine(startCoord: Coordinates, endCoord: Coordinates) {
         return (
-          (startCoord[0] === 0 && endCoord[0] === 0) ||
-          (startCoord[1] === 0 && endCoord[1] === 0) ||
-          (startCoord[0] === props.width && endCoord[0] === props.width) ||
-          (startCoord[1] === props.height && endCoord[1] === props.height)
+          (startCoord.x === 0 && endCoord.x === 0) ||
+          (startCoord.y === 0 && endCoord.y === 0) ||
+          (startCoord.x === props.width && endCoord.x === props.width) ||
+          (startCoord.y === props.height && endCoord.y === props.height)
         )
       }
 
@@ -140,10 +134,10 @@ export default defineComponent({
         filteredClashLines = filteredClashLines.filter((clashLine) => {
           //intersection
           const intersect = doLineSegmentsIntersect(
-            [lineCoords[0][0], lineCoords[0][1] ],
-            [lineCoords[1][0], lineCoords[1][1] ],
-            [clashLine[0][0][0], clashLine[0][0][1] ],
-            [clashLine[0][1][0], clashLine[0][1][1] ]
+            lineCoords[0],
+            lineCoords[1],
+            clashLine[0][0],
+            clashLine[0][1]
           )
           return intersect && clashLine[1] > lineDistance
         })

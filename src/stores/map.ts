@@ -38,19 +38,19 @@ export const useMapStore = defineStore({
       this.size = size
     },
 
-    getPoint(pointPosition: Point): PointProps | undefined {
+    getPoint(pointPosition: Coordinates): PointProps | undefined {
       if (!this.size.width || !this.size.height) return
-      if (pointPosition[0] > this.size.width) return
-      if (pointPosition[1] > this.size.height) return
+      if (pointPosition.x > this.size.width) return
+      if (pointPosition.y > this.size.height) return
 
-      const point = this.points[pointPosition[0] * this.size.height + pointPosition[1]]
+      const point = this.points[pointPosition.x * this.size.height + pointPosition.y]
       return { height: point[0], color: point[1] }
     },
 
-    updatePoint(pointPosition: Point, pointAttrs: PointProps) {
+    updatePoint(pointPosition: Coordinates, pointAttrs: PointProps) {
       if (!this.size.width || !this.size.height) return
-      if (pointPosition[0] > this.size.width) return
-      if (pointPosition[1] > this.size.height) return
+      if (pointPosition.x > this.size.width) return
+      if (pointPosition.y > this.size.height) return
 
       const pointIndex = pointPosition[0] * this.size.height + pointPosition[1]
       this.points[pointIndex] = [pointAttrs.height, pointAttrs.color]
