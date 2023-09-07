@@ -6,7 +6,7 @@ import MapCanvas from '../components/map/MapCanvas.vue'
 <template>
   <main>
     <MapForm />
-    <MapCanvas :width="260" :height="150" />
+    <MapCanvas :width="500" :height="300" />
   </main>
 </template>
 
