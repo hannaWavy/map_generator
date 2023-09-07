@@ -155,10 +155,8 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      const startTime = Date.now();
       context.value = mapCanvas.value?.getContext('2d') || undefined
       render()
-      console.log(Date.now() - startTime)
     })
 
     return {
